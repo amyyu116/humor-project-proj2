@@ -1,26 +1,305 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* === Base Reset === */
+* {
+    box-sizing: border-box;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    padding: 0;
+    margin: 0;
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+    background: #0f1117;
+    color: #f5f5f5;
+}
+
+/* === Layout === */
+.app-container {
+    padding: 32px 48px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* === Header === */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.app-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.signout-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #2c2f36;
+    background: #1a1d24;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.signout-btn:hover {
+    background: #262a33;
+}
+
+/* === Tabs === */
+.tabs {
+    display: flex;
+    gap: 28px;
+    border-bottom: 1px solid #2a2d35;
+    margin-bottom: 32px;
+}
+
+.tab {
+    padding: 10px 0;
+    font-size: 14px;
+    text-decoration: none;
+    color: #9aa0a6;
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+.tab:hover {
+    color: white;
+}
+
+.tab.active {
+    color: white;
+    font-weight: 500;
+}
+
+.tab.active::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: white;
+}
+
+/* === Chart Container === */
+.chart-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* === Tooltip === */
+.tooltip {
+    position: fixed;
+    background: rgba(20, 22, 28, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid #2c2f36;
+    border-radius: 12px;
+    padding: 14px 18px;
+    max-width: 320px;
+    font-size: 14px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.tooltip-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.tooltip-caption {
+    font-style: italic;
+    margin-bottom: 6px;
+    color: #d0d4db;
+}
+
+.tooltip-likes {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+/* Title */
+.admin-title {
+    font-size: 2rem; /* ~text-3xl */
+    font-weight: 700; /* bold */
+    margin-bottom: 1.5rem; /* mb-6 */
+}
+
+/* Title */
+.admin-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+/* Tabs container */
+.admin-tabs {
+    display: flex;
+    gap: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 2rem;
+}
+
+/* Individual tab */
+.admin-tab {
+    padding-bottom: 0.5rem;
+    text-decoration: none;
+    color: white;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+/* Hover underline effect */
+.admin-tab:hover {
+    border-bottom: 2px solid white;
+}
+
+/* Active tab */
+.admin-tab.active {
+    border-bottom: 2px solid white;
+    font-weight: 600;
+}
+/* ============================= */
+/* Admin Layout */
+/* ============================= */
+
+.admin-users {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 24px;
+    font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+}
+
+.admin-users h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+/* ============================= */
+/* Search Bar */
+/* ============================= */
+
+.admin-search {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.admin-search input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.2s ease;
+}
+
+.admin-search input:focus {
+    outline: none;
+    border-color: #000;
+}
+
+.admin-search button {
+    padding: 10px 16px;
+    border: none;
+    background: #000;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s ease;
+}
+
+.admin-search button:hover {
+    opacity: 0.8;
+}
+
+/* ============================= */
+/* Table Styling */
+/* ============================= */
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.admin-table thead {
+    background: #f9f9f9;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.admin-table th {
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #555;
+}
+
+.admin-table tbody tr:hover {
+    background: #fafafa;
+}
+
+.admin-table tbody tr {
+    color: #555;
+}
+
+/* ============================= */
+/* Pagination */
+/* ============================= */
+
+.admin-users a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 500;
+}
+
+.admin-users p {
+    text-decoration: none;
+    color: #000;
+    font-weight: 500;
+}
+
+.admin-users a:hover {
+    text-decoration: underline;
+}
+
+/* ============================= */
+/* Superadmin Badge */
+/* ============================= */
+
+.admin-table td:nth-child(4) {
+    text-align: center;
 }
