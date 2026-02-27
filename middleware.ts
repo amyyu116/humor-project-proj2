@@ -1,5 +1,5 @@
+import { type NextRequest } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
-import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
     return await updateSession(request);
@@ -10,9 +10,10 @@ export const config = {
         /*
          * Match all request paths except:
          * - _next (static files)
-         * - static files
          * - favicon
+         * - images
+         * - Supabase auth
          */
-        "/((?!_next/static|_next/image|favicon.ico).*)",
+        "/((?!_next/static|_next/image|favicon.ico|auth/v1).*)",
     ],
 };
