@@ -13,8 +13,6 @@ export default async function RootLayout({
         data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) redirect("/login");
-
     return (
         <html>
             <body>
@@ -22,14 +20,19 @@ export default async function RootLayout({
                     <div className="app-header">
                         <div className="app-title">Humor Studies Project 2</div>
 
-                        <div className="user-section">
-                            <span>{user.email}</span>
-                            <form action="/auth/signout" method="post">
-                                <button className="signout-btn" type="submit">
-                                    Sign out
-                                </button>
-                            </form>
-                        </div>
+                        {user && (
+                            <div className="user-section">
+                                <span>{user.email}</span>
+                                <form action="/auth/signout" method="post">
+                                    <button
+                                        className="signout-btn"
+                                        type="submit"
+                                    >
+                                        Sign out
+                                    </button>
+                                </form>
+                            </div>
+                        )}
                     </div>
 
                     <NavTabs />
