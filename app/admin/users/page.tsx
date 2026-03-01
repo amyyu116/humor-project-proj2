@@ -65,7 +65,11 @@ export default async function UsersAdmin({ searchParams }: Props) {
                     {users?.map((user: any) => (
                         <tr key={user.id}>
                             <td>{user.email}</td>
-                            <td>{user.full_name || "—"}</td>
+                            <td>
+                                {(user.first_name || "") +
+                                    " " +
+                                    (user.last_name || "")}
+                            </td>
                             <td>
                                 {user.created_datetime_utc
                                     ? new Date(
