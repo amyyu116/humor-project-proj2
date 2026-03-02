@@ -43,7 +43,7 @@ export default async function AdminLayout({
                     Captions
                 </Link>
 
-                <Link href="/admin/caption-requests" className="admin-tab">
+                {/* <Link href="/admin/caption-requests" className="admin-tab">
                     Caption Requests
                 </Link>
 
@@ -89,7 +89,7 @@ export default async function AdminLayout({
 
                 <Link href="/admin/humor-mix" className="admin-tab">
                     Humor Mix
-                </Link>
+                </Link> */}
             </div>
             {children}
         </div>
