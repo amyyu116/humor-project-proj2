@@ -87,24 +87,24 @@ export default async function UsersAdmin({ searchParams }: Props) {
             </table>
 
             {/* Pagination */}
-            <div style={{ marginTop: "20px" }}>
+            <div className="admin-pagination">
                 {page > 1 && (
                     <a
                         href={`?search=${search}&page=${page - 1}`}
-                        style={{ marginRight: "10px" }}
+                        className="admin-page-link"
                     >
                         ← Previous
                     </a>
                 )}
 
-                <span>
+                <span className="admin-page-label">
                     Page {page} of {totalPages}
                 </span>
 
                 {page < totalPages && (
                     <a
                         href={`?search=${search}&page=${page + 1}`}
-                        style={{ marginLeft: "10px" }}
+                        className="admin-page-link"
                     >
                         Next →
                     </a>

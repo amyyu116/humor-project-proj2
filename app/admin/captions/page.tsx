@@ -1,4 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
+import AdminLayoutShell from "@/components/admin/AdminLayoutShell";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminTable from "@/components/admin/AdminTable";
 
 interface Props {
     searchParams: Promise<{
@@ -7,7 +10,18 @@ interface Props {
     }>;
 }
 
-const PAGE_SIZE = 10;
+type CaptionRow = {
+    id: string;
+    content: string | null;
+    like_count: number;
+    is_public: boolean;
+    is_featured: boolean;
+    created_datetime_utc: string;
+    image_id: string;
+    profile_id: string;
+};
+
+const PAGE_SIZE = 20;
 
 export default async function CaptionsAdmin({ searchParams }: Props) {
     const supabase = await createClient();
@@ -15,59 +29,41 @@ export default async function CaptionsAdmin({ searchParams }: Props) {
 
     const search =
         (Array.isArray(params.search) ? params.search[0] : params.search) || "";
-
     const pageParam =
         (Array.isArray(params.page) ? params.page[0] : params.page) || "1";
 
-    const page = Math.max(parseInt(pageParam) || 1, 1);
+    const page = Math.max(parseInt(pageParam, 10) || 1, 1);
     const from = (page - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
-    // 1️⃣ Fetch captions
-    let captionsQuery = supabase
-        .from("captions")
-        .select("id, content, like_count, image_id", {
-            count: "exact",
-        });
+    let query = supabase.from("captions").select(
+        "id, content, like_count, is_public, is_featured, created_datetime_utc, image_id, profile_id",
+        { count: "exact" },
+    );
 
     if (search) {
-        captionsQuery = captionsQuery.ilike("content", `%${search}%`);
+        query = query.ilike("content", `%${search}%`);
     }
 
-    const {
-        data: captions,
-        count,
-        error,
-    } = await captionsQuery
+    const { data, count } = await query
         .order("created_datetime_utc", { ascending: false })
         .range(from, to);
 
-    if (error) {
-        console.error("CAPTIONS ERROR:", error);
-    }
-
-    const imageIds = captions?.map((c: any) => String(c.image_id)) || [];
-
-    let imageMap: Record<string, string> = {};
-
-    if (imageIds.length > 0) {
-        const { data: images } = await supabase
-            .from("images")
-            .select("id, url")
-            .in("id", imageIds);
-
-        imageMap =
-            images?.reduce((acc: any, img: any) => {
-                acc[img.id] = img.url;
-                return acc;
-            }, {}) || {};
-    }
-
+    const captions = (data ?? []) as CaptionRow[];
     const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
 
+    const buildPageLink = (newPage: number) => {
+        const nextParams = new URLSearchParams();
+        if (search) {
+            nextParams.set("search", search);
+        }
+        nextParams.set("page", String(newPage));
+        return `?${nextParams.toString()}`;
+    };
+
     return (
-        <div className="admin-captions">
-            <h2>Caption Management</h2>
+        <AdminLayoutShell>
+            <AdminPageHeader title="Captions (Read)" />
 
             <form method="GET" className="admin-search">
                 <input
@@ -79,58 +75,61 @@ export default async function CaptionsAdmin({ searchParams }: Props) {
                 <button type="submit">Search</button>
             </form>
 
-            <table className="admin-table">
-                <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th>Content</th>
-                        <th>Likes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {captions?.map((caption: any) => (
+            <AdminTable
+                headers={[
+                    "Content",
+                    "Likes",
+                    "Public",
+                    "Featured",
+                    "Image ID",
+                    "Profile ID",
+                    "Created",
+                ]}
+            >
+                {captions.length > 0 ? (
+                    captions.map((caption) => (
                         <tr key={caption.id}>
+                            <td>{caption.content || "-"}</td>
+                            <td>{caption.like_count}</td>
+                            <td>{caption.is_public ? "Yes" : "No"}</td>
+                            <td>{caption.is_featured ? "Yes" : "No"}</td>
+                            <td style={{ fontSize: "12px" }}>{caption.image_id}</td>
+                            <td style={{ fontSize: "12px" }}>{caption.profile_id}</td>
                             <td>
-                                {imageMap[caption.image_id] ? (
-                                    <img
-                                        src={imageMap[caption.image_id]}
-                                        alt=""
-                                        style={{ maxWidth: "100px" }}
-                                    />
-                                ) : (
-                                    "Image is not public!"
-                                )}
+                                {caption.created_datetime_utc
+                                    ? new Date(
+                                          caption.created_datetime_utc,
+                                      ).toLocaleString()
+                                    : "-"}
                             </td>
-                            <td>{caption.content}</td>
-                            <td>{caption.like_count ?? 0}</td>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            <div style={{ marginTop: "20px" }}>
-                {page > 1 && (
-                    <a
-                        href={`?search=${search}&page=${page - 1}`}
-                        style={{ marginRight: "10px" }}
-                    >
-                        ← Previous
-                    </a>
+                    ))
+                ) : (
+                    <tr>
+                        <td colSpan={7} style={{ textAlign: "center" }}>
+                            No captions found.
+                        </td>
+                    </tr>
                 )}
+            </AdminTable>
 
-                <span>
+            <div className="admin-pagination">
+                {page > 1 ? (
+                    <a href={buildPageLink(page - 1)} className="admin-page-link">
+                        Previous
+                    </a>
+                ) : null}
+
+                <span className="admin-page-label">
                     Page {page} of {totalPages}
                 </span>
 
-                {page < totalPages && (
-                    <a
-                        href={`?search=${search}&page=${page + 1}`}
-                        style={{ marginLeft: "10px" }}
-                    >
-                        Next →
+                {page < totalPages ? (
+                    <a href={buildPageLink(page + 1)} className="admin-page-link">
+                        Next
                     </a>
-                )}
+                ) : null}
             </div>
-        </div>
+        </AdminLayoutShell>
     );
 }

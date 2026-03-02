@@ -238,6 +238,63 @@ body {
 /* ============================= */
 /* Table Styling */
 /* ============================= */
+.admin-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: 220px;
+    background: #111;
+    color: white;
+    padding: 20px;
+}
+
+.admin-sidebar a {
+    display: block;
+    color: white;
+    margin: 8px 0;
+    text-decoration: none;
+}
+
+.admin-content {
+    flex: 1;
+    padding: 40px;
+}
+
+.admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.admin-form {
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.admin-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-button {
+    padding: 10px 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.admin-button.primary {
+    background: black;
+    color: white;
+}
+
+.admin-button.danger {
+    background: red;
+    color: white;
+}
 
 .admin-table {
     width: 100%;
@@ -276,30 +333,37 @@ body {
     color: #555;
 }
 
-/* ============================= */
-/* Pagination */
-/* ============================= */
+.admin-pagination {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-.admin-users a {
+.admin-page-link {
+    display: inline-block;
+    padding: 8px 14px;
+    background: #111;
+    color: #fff;
+    border: 1px solid #111;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
     text-decoration: none;
-    color: #000;
-    font-weight: 500;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.admin-users p {
-    text-decoration: none;
-    color: #000;
-    font-weight: 500;
+.admin-page-link:hover {
+    background: #2b2b2b;
+    border-color: #2b2b2b;
 }
 
-.admin-users a:hover {
-    text-decoration: underline;
+.admin-page-link:focus-visible {
+    outline: 2px solid #4c9ffe;
+    outline-offset: 2px;
 }
 
-/* ============================= */
-/* Superadmin Badge */
-/* ============================= */
-
-.admin-table td:nth-child(4) {
-    text-align: center;
+.admin-page-label {
+    font-size: 14px;
+    color: #d9d9d9;
 }

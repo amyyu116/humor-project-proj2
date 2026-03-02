@@ -8,18 +8,23 @@ export default async function AdminPage() {
         data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) redirect("/login");
+    if (!user) {
+        redirect("/login");
+    }
 
-    // 🔐 OPTIONAL: restrict to specific admin email
-    if (user.email !== "ajy2127@columbia.edu") {
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_superadmin")
+        .eq("id", user.id)
+        .single();
+
+    if (!profile?.is_superadmin && user.email !== "ajy2127@columbia.edu") {
         redirect("/");
     }
 
     return (
         <div>
             <p>Select a tab above to manage content.</p>
-
-            {/* Put moderation tools here */}
         </div>
     );
 }
