@@ -1,4 +1,5 @@
 "use client";
+import "../globals.css";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,7 +18,7 @@ export default function NavTabs() {
 
             <Link
                 href="/admin"
-                className={`tab ${pathname === "/admin" ? "active" : ""}`}
+                className={`tab ${pathname.startsWith("/admin") ? "active" : ""}`}
             >
                 Admin
             </Link>

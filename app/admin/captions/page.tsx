@@ -2,6 +2,14 @@ import { createClient } from "@/utils/supabase/server";
 import AdminLayoutShell from "@/components/admin/AdminLayoutShell";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminTable from "@/components/admin/AdminTable";
+import AdminPagination from "@/components/admin/AdminPagination";
+import {
+    createPageLinkBuilder,
+    getPage,
+    getParam,
+    getRange,
+    getTotalPages,
+} from "@/utils/admin/tableParams";
 
 interface Props {
     searchParams: Promise<{
@@ -19,27 +27,30 @@ type CaptionRow = {
     created_datetime_utc: string;
     image_id: string;
     profile_id: string;
+    images: { url: string | null }[] | { url: string | null } | null;
 };
-
+function getImageUrl(images: CaptionRow["images"]): string | null | undefined {
+    if (Array.isArray(images)) {
+        return images[0]?.url;
+    }
+    return images?.url;
+}
 const PAGE_SIZE = 20;
 
 export default async function CaptionsAdmin({ searchParams }: Props) {
     const supabase = await createClient();
     const params = await searchParams;
 
-    const search =
-        (Array.isArray(params.search) ? params.search[0] : params.search) || "";
-    const pageParam =
-        (Array.isArray(params.page) ? params.page[0] : params.page) || "1";
+    const search = getParam(params, "search");
+    const page = getPage(params);
+    const { from, to } = getRange(page, PAGE_SIZE);
 
-    const page = Math.max(parseInt(pageParam, 10) || 1, 1);
-    const from = (page - 1) * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
-    let query = supabase.from("captions").select(
-        "id, content, like_count, is_public, is_featured, created_datetime_utc, image_id, profile_id",
-        { count: "exact" },
-    );
+    let query = supabase
+        .from("captions")
+        .select(
+            "id, content, like_count, is_public, is_featured, created_datetime_utc, image_id, profile_id, images(url)",
+            { count: "exact" },
+        );
 
     if (search) {
         query = query.ilike("content", `%${search}%`);
@@ -50,16 +61,8 @@ export default async function CaptionsAdmin({ searchParams }: Props) {
         .range(from, to);
 
     const captions = (data ?? []) as CaptionRow[];
-    const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
-
-    const buildPageLink = (newPage: number) => {
-        const nextParams = new URLSearchParams();
-        if (search) {
-            nextParams.set("search", search);
-        }
-        nextParams.set("page", String(newPage));
-        return `?${nextParams.toString()}`;
-    };
+    const totalPages = getTotalPages(count, PAGE_SIZE);
+    const buildPageLink = createPageLinkBuilder({ search });
 
     return (
         <AdminLayoutShell>
@@ -77,6 +80,7 @@ export default async function CaptionsAdmin({ searchParams }: Props) {
 
             <AdminTable
                 headers={[
+                    "Image",
                     "Content",
                     "Likes",
                     "Public",
@@ -93,8 +97,23 @@ export default async function CaptionsAdmin({ searchParams }: Props) {
                             <td>{caption.like_count}</td>
                             <td>{caption.is_public ? "Yes" : "No"}</td>
                             <td>{caption.is_featured ? "Yes" : "No"}</td>
-                            <td style={{ fontSize: "12px" }}>{caption.image_id}</td>
-                            <td style={{ fontSize: "12px" }}>{caption.profile_id}</td>
+                            <td style={{ fontSize: "12px" }}>
+                                {caption.image_id}
+                            </td>
+                            <td style={{ fontSize: "12px" }}>
+                                {caption.profile_id}
+                            </td>
+                            <td>
+                                {getImageUrl(caption.images) ? (
+                                    <img
+                                        src={getImageUrl(caption.images) || ""}
+                                        alt=""
+                                        style={{ maxWidth: "80px" }}
+                                    />
+                                ) : (
+                                    "-"
+                                )}
+                            </td>
                             <td>
                                 {caption.created_datetime_utc
                                     ? new Date(
@@ -106,30 +125,17 @@ export default async function CaptionsAdmin({ searchParams }: Props) {
                     ))
                 ) : (
                     <tr>
-                        <td colSpan={7} style={{ textAlign: "center" }}>
+                        <td colSpan={8} style={{ textAlign: "center" }}>
                             No captions found.
                         </td>
                     </tr>
                 )}
             </AdminTable>
-
-            <div className="admin-pagination">
-                {page > 1 ? (
-                    <a href={buildPageLink(page - 1)} className="admin-page-link">
-                        Previous
-                    </a>
-                ) : null}
-
-                <span className="admin-page-label">
-                    Page {page} of {totalPages}
-                </span>
-
-                {page < totalPages ? (
-                    <a href={buildPageLink(page + 1)} className="admin-page-link">
-                        Next
-                    </a>
-                ) : null}
-            </div>
+            <AdminPagination
+                page={page}
+                totalPages={totalPages}
+                buildPageLink={buildPageLink}
+            />
         </AdminLayoutShell>
     );
 }

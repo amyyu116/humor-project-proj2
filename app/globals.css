@@ -176,6 +176,96 @@ body {
     border-bottom: 2px solid white;
     font-weight: 600;
 }
+
+.admin-nav {
+    position: relative;
+    margin-bottom: 24px;
+    max-width: 320px;
+}
+
+.admin-nav-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #2f3642;
+    background: linear-gradient(180deg, #171c24 0%, #12161d 100%);
+    color: #f5f7fb;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-nav-trigger:hover {
+    border-color: #4a5568;
+}
+
+.admin-nav-trigger:focus-visible {
+    outline: 2px solid #4c9ffe;
+    outline-offset: 2px;
+}
+
+.admin-nav-trigger-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-nav-trigger svg {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.admin-nav-trigger svg.open {
+    transform: rotate(180deg);
+}
+
+.admin-nav-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 40;
+    width: 100%;
+    max-height: 380px;
+    overflow-y: auto;
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid #2f3642;
+    background: #12161d;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38);
+}
+
+.admin-nav-item {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 9px;
+    color: #e6eaf2;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.admin-nav-item:hover {
+    background: #1f2631;
+    color: #fff;
+}
+
+.admin-nav-item.active {
+    background: #2a3443;
+    color: #fff;
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .admin-nav {
+        max-width: 100%;
+    }
+}
 /* ============================= */
 /* Admin Layout */
 /* ============================= */

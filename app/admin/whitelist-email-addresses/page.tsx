@@ -19,9 +19,16 @@ interface Props {
     }>;
 }
 
-const PAGE_SIZE = 10;
+type WhitelistEmailRow = {
+    id: number;
+    email_address: string;
+    created_datetime_utc: string;
+    modified_datetime_utc: string | null;
+};
 
-export default async function ImagesAdmin({ searchParams }: Props) {
+const PAGE_SIZE = 20;
+
+export default async function WhitelistEmailAddressesPage({ searchParams }: Props) {
     const supabase = await createClient();
     const params = await searchParams;
 
@@ -29,32 +36,29 @@ export default async function ImagesAdmin({ searchParams }: Props) {
     const page = getPage(params);
     const { from, to } = getRange(page, PAGE_SIZE);
 
-    let query = supabase
-        .from("images")
-        .select(
-            "id, url, image_description, additional_context, created_datetime_utc",
-            { count: "exact" },
-        );
+    let query = supabase.from("whitelist_email_addresses").select(
+        "id, email_address, created_datetime_utc, modified_datetime_utc",
+        { count: "exact" },
+    );
 
     if (search) {
-        query = query.or(
-            `image_description.ilike.%${search}%,additional_context.ilike.%${search}%`,
-        );
+        query = query.ilike("email_address", `%${search}%`);
     }
 
-    const { data: images, count } = await query
-        .order("created_datetime_utc", { ascending: false })
+    const { data, count } = await query
+        .order("email_address", { ascending: true })
         .range(from, to);
 
+    const emails = (data ?? []) as WhitelistEmailRow[];
     const totalPages = getTotalPages(count, PAGE_SIZE);
     const buildPageLink = createPageLinkBuilder({ search });
 
     return (
         <AdminLayoutShell>
             <AdminPageHeader
-                title="Image Management"
-                actionHref="/admin/images/new"
-                actionLabel="New Image"
+                title="Whitelist Email Addresses"
+                actionHref="/admin/whitelist-email-addresses/new"
+                actionLabel="New Email"
             />
 
             <form method="GET" className="admin-search">
@@ -62,45 +66,27 @@ export default async function ImagesAdmin({ searchParams }: Props) {
                     type="text"
                     name="search"
                     defaultValue={search}
-                    placeholder="Search description or context..."
+                    placeholder="Search email address..."
                 />
                 <button type="submit">Search</button>
             </form>
 
-            <AdminTable
-                headers={[
-                    "Image",
-                    "Description",
-                    "Additional Context",
-                    "Created",
-                    "Actions",
-                ]}
-            >
-                {images && images.length > 0 ? (
-                    images.map((image) => (
-                        <tr key={image.id}>
+            <AdminTable headers={["ID", "Email", "Created", "Modified", "Actions"]}>
+                {emails.length > 0 ? (
+                    emails.map((email) => (
+                        <tr key={email.id}>
+                            <td>{email.id}</td>
+                            <td>{email.email_address}</td>
+                            <td>{new Date(email.created_datetime_utc).toLocaleString()}</td>
                             <td>
-                                {image.url ? (
-                                    <img
-                                        src={image.url}
-                                        alt=""
-                                        style={{ maxWidth: "100px" }}
-                                    />
-                                ) : (
-                                    "-"
-                                )}
-                            </td>
-                            <td>{image.image_description || "-"}</td>
-                            <td>{image.additional_context || "-"}</td>
-                            <td>
-                                {image.created_datetime_utc
+                                {email.modified_datetime_utc
                                     ? new Date(
-                                          image.created_datetime_utc,
-                                      ).toLocaleDateString()
+                                          email.modified_datetime_utc,
+                                      ).toLocaleString()
                                     : "-"}
                             </td>
                             <td>
-                                <Link href={`/admin/images/${image.id}`}>
+                                <Link href={`/admin/whitelist-email-addresses/${email.id}`}>
                                     Edit / Delete
                                 </Link>
                             </td>
@@ -109,7 +95,7 @@ export default async function ImagesAdmin({ searchParams }: Props) {
                 ) : (
                     <tr>
                         <td colSpan={5} style={{ textAlign: "center" }}>
-                            No images found.
+                            No whitelisted email addresses found.
                         </td>
                     </tr>
                 )}

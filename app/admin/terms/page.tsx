@@ -19,9 +19,20 @@ interface Props {
     }>;
 }
 
-const PAGE_SIZE = 10;
+type TermRow = {
+    id: number;
+    term: string;
+    definition: string;
+    example: string;
+    priority: number;
+    term_type_id: number | null;
+    modified_datetime_utc: string | null;
+    created_datetime_utc: string;
+};
 
-export default async function ImagesAdmin({ searchParams }: Props) {
+const PAGE_SIZE = 20;
+
+export default async function TermsPage({ searchParams }: Props) {
     const supabase = await createClient();
     const params = await searchParams;
 
@@ -29,32 +40,32 @@ export default async function ImagesAdmin({ searchParams }: Props) {
     const page = getPage(params);
     const { from, to } = getRange(page, PAGE_SIZE);
 
-    let query = supabase
-        .from("images")
-        .select(
-            "id, url, image_description, additional_context, created_datetime_utc",
-            { count: "exact" },
-        );
+    let query = supabase.from("terms").select(
+        "id, term, definition, example, priority, term_type_id, modified_datetime_utc, created_datetime_utc",
+        { count: "exact" },
+    );
 
     if (search) {
         query = query.or(
-            `image_description.ilike.%${search}%,additional_context.ilike.%${search}%`,
+            `term.ilike.%${search}%,definition.ilike.%${search}%,example.ilike.%${search}%`,
         );
     }
 
-    const { data: images, count } = await query
+    const { data, count } = await query
+        .order("priority", { ascending: false })
         .order("created_datetime_utc", { ascending: false })
         .range(from, to);
 
+    const terms = (data ?? []) as TermRow[];
     const totalPages = getTotalPages(count, PAGE_SIZE);
     const buildPageLink = createPageLinkBuilder({ search });
 
     return (
         <AdminLayoutShell>
             <AdminPageHeader
-                title="Image Management"
-                actionHref="/admin/images/new"
-                actionLabel="New Image"
+                title="Terms"
+                actionHref="/admin/terms/new"
+                actionLabel="New Term"
             />
 
             <form method="GET" className="admin-search">
@@ -62,45 +73,31 @@ export default async function ImagesAdmin({ searchParams }: Props) {
                     type="text"
                     name="search"
                     defaultValue={search}
-                    placeholder="Search description or context..."
+                    placeholder="Search terms..."
                 />
                 <button type="submit">Search</button>
             </form>
 
             <AdminTable
                 headers={[
-                    "Image",
-                    "Description",
-                    "Additional Context",
-                    "Created",
+                    "Term",
+                    "Definition",
+                    "Example",
+                    "Priority",
+                    "Term Type ID",
                     "Actions",
                 ]}
             >
-                {images && images.length > 0 ? (
-                    images.map((image) => (
-                        <tr key={image.id}>
+                {terms.length > 0 ? (
+                    terms.map((term) => (
+                        <tr key={term.id}>
+                            <td>{term.term}</td>
+                            <td>{term.definition}</td>
+                            <td>{term.example}</td>
+                            <td>{term.priority}</td>
+                            <td>{term.term_type_id ?? "-"}</td>
                             <td>
-                                {image.url ? (
-                                    <img
-                                        src={image.url}
-                                        alt=""
-                                        style={{ maxWidth: "100px" }}
-                                    />
-                                ) : (
-                                    "-"
-                                )}
-                            </td>
-                            <td>{image.image_description || "-"}</td>
-                            <td>{image.additional_context || "-"}</td>
-                            <td>
-                                {image.created_datetime_utc
-                                    ? new Date(
-                                          image.created_datetime_utc,
-                                      ).toLocaleDateString()
-                                    : "-"}
-                            </td>
-                            <td>
-                                <Link href={`/admin/images/${image.id}`}>
+                                <Link href={`/admin/terms/${term.id}`}>
                                     Edit / Delete
                                 </Link>
                             </td>
@@ -108,8 +105,8 @@ export default async function ImagesAdmin({ searchParams }: Props) {
                     ))
                 ) : (
                     <tr>
-                        <td colSpan={5} style={{ textAlign: "center" }}>
-                            No images found.
+                        <td colSpan={6} style={{ textAlign: "center" }}>
+                            No terms found.
                         </td>
                     </tr>
                 )}

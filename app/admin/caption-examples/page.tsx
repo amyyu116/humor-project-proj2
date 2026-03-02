@@ -19,9 +19,20 @@ interface Props {
     }>;
 }
 
-const PAGE_SIZE = 10;
+type CaptionExampleRow = {
+    id: number;
+    image_description: string;
+    caption: string;
+    explanation: string;
+    priority: number;
+    image_id: string | null;
+    modified_datetime_utc: string | null;
+    created_datetime_utc: string;
+};
 
-export default async function ImagesAdmin({ searchParams }: Props) {
+const PAGE_SIZE = 20;
+
+export default async function CaptionExamplesPage({ searchParams }: Props) {
     const supabase = await createClient();
     const params = await searchParams;
 
@@ -30,31 +41,33 @@ export default async function ImagesAdmin({ searchParams }: Props) {
     const { from, to } = getRange(page, PAGE_SIZE);
 
     let query = supabase
-        .from("images")
+        .from("caption_examples")
         .select(
-            "id, url, image_description, additional_context, created_datetime_utc",
+            "id, image_description, caption, explanation, priority, image_id, modified_datetime_utc, created_datetime_utc",
             { count: "exact" },
         );
 
     if (search) {
         query = query.or(
-            `image_description.ilike.%${search}%,additional_context.ilike.%${search}%`,
+            `caption.ilike.%${search}%,image_description.ilike.%${search}%,explanation.ilike.%${search}%`,
         );
     }
 
-    const { data: images, count } = await query
+    const { data, count } = await query
+        .order("priority", { ascending: false })
         .order("created_datetime_utc", { ascending: false })
         .range(from, to);
 
+    const examples = (data ?? []) as CaptionExampleRow[];
     const totalPages = getTotalPages(count, PAGE_SIZE);
     const buildPageLink = createPageLinkBuilder({ search });
 
     return (
         <AdminLayoutShell>
             <AdminPageHeader
-                title="Image Management"
-                actionHref="/admin/images/new"
-                actionLabel="New Image"
+                title="Caption Examples"
+                actionHref="/admin/caption-examples/new"
+                actionLabel="New Example"
             />
 
             <form method="GET" className="admin-search">
@@ -62,45 +75,35 @@ export default async function ImagesAdmin({ searchParams }: Props) {
                     type="text"
                     name="search"
                     defaultValue={search}
-                    placeholder="Search description or context..."
+                    placeholder="Search caption examples..."
                 />
                 <button type="submit">Search</button>
             </form>
 
             <AdminTable
                 headers={[
-                    "Image",
-                    "Description",
-                    "Additional Context",
-                    "Created",
+                    "Image Description",
+                    "Caption",
+                    "Explanation",
+                    "Priority",
+                    "Image ID",
                     "Actions",
                 ]}
             >
-                {images && images.length > 0 ? (
-                    images.map((image) => (
-                        <tr key={image.id}>
-                            <td>
-                                {image.url ? (
-                                    <img
-                                        src={image.url}
-                                        alt=""
-                                        style={{ maxWidth: "100px" }}
-                                    />
-                                ) : (
-                                    "-"
-                                )}
-                            </td>
-                            <td>{image.image_description || "-"}</td>
-                            <td>{image.additional_context || "-"}</td>
-                            <td>
-                                {image.created_datetime_utc
-                                    ? new Date(
-                                          image.created_datetime_utc,
-                                      ).toLocaleDateString()
-                                    : "-"}
+                {examples.length > 0 ? (
+                    examples.map((example) => (
+                        <tr key={example.id}>
+                            <td>{example.image_description}</td>
+                            <td>{example.caption}</td>
+                            <td>{example.explanation}</td>
+                            <td>{example.priority}</td>
+                            <td style={{ fontSize: "12px" }}>
+                                {example.image_id || "-"}
                             </td>
                             <td>
-                                <Link href={`/admin/images/${image.id}`}>
+                                <Link
+                                    href={`/admin/caption-examples/${example.id}`}
+                                >
                                     Edit / Delete
                                 </Link>
                             </td>
@@ -108,8 +111,8 @@ export default async function ImagesAdmin({ searchParams }: Props) {
                     ))
                 ) : (
                     <tr>
-                        <td colSpan={5} style={{ textAlign: "center" }}>
-                            No images found.
+                        <td colSpan={6} style={{ textAlign: "center" }}>
+                            No caption examples found.
                         </td>
                     </tr>
                 )}
@@ -122,6 +125,3 @@ export default async function ImagesAdmin({ searchParams }: Props) {
         </AdminLayoutShell>
     );
 }
-
-
-

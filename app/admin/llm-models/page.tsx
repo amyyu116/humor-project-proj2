@@ -19,9 +19,19 @@ interface Props {
     }>;
 }
 
-const PAGE_SIZE = 10;
+type LlmModelRow = {
+    id: number;
+    name: string;
+    llm_provider_id: number;
+    provider_model_id: string;
+    is_temperature_supported: boolean;
+    created_datetime_utc: string;
+    llm_providers: { name: string } | null;
+};
 
-export default async function ImagesAdmin({ searchParams }: Props) {
+const PAGE_SIZE = 20;
+
+export default async function LlmModelsPage({ searchParams }: Props) {
     const supabase = await createClient();
     const params = await searchParams;
 
@@ -29,32 +39,29 @@ export default async function ImagesAdmin({ searchParams }: Props) {
     const page = getPage(params);
     const { from, to } = getRange(page, PAGE_SIZE);
 
-    let query = supabase
-        .from("images")
-        .select(
-            "id, url, image_description, additional_context, created_datetime_utc",
-            { count: "exact" },
-        );
+    let query = supabase.from("llm_models").select(
+        "id, name, llm_provider_id, provider_model_id, is_temperature_supported, created_datetime_utc, llm_providers(name)",
+        { count: "exact" },
+    );
 
     if (search) {
-        query = query.or(
-            `image_description.ilike.%${search}%,additional_context.ilike.%${search}%`,
-        );
+        query = query.or(`name.ilike.%${search}%,provider_model_id.ilike.%${search}%`);
     }
 
-    const { data: images, count } = await query
-        .order("created_datetime_utc", { ascending: false })
+    const { data, count } = await query
+        .order("name", { ascending: true })
         .range(from, to);
 
+    const models = (data ?? []) as unknown as LlmModelRow[];
     const totalPages = getTotalPages(count, PAGE_SIZE);
     const buildPageLink = createPageLinkBuilder({ search });
 
     return (
         <AdminLayoutShell>
             <AdminPageHeader
-                title="Image Management"
-                actionHref="/admin/images/new"
-                actionLabel="New Image"
+                title="LLM Models"
+                actionHref="/admin/llm-models/new"
+                actionLabel="New Model"
             />
 
             <form method="GET" className="admin-search">
@@ -62,45 +69,34 @@ export default async function ImagesAdmin({ searchParams }: Props) {
                     type="text"
                     name="search"
                     defaultValue={search}
-                    placeholder="Search description or context..."
+                    placeholder="Search model name or provider model id..."
                 />
                 <button type="submit">Search</button>
             </form>
 
             <AdminTable
                 headers={[
-                    "Image",
-                    "Description",
-                    "Additional Context",
-                    "Created",
+                    "ID",
+                    "Name",
+                    "Provider",
+                    "Provider Model ID",
+                    "Temperature",
                     "Actions",
                 ]}
             >
-                {images && images.length > 0 ? (
-                    images.map((image) => (
-                        <tr key={image.id}>
+                {models.length > 0 ? (
+                    models.map((model) => (
+                        <tr key={model.id}>
+                            <td>{model.id}</td>
+                            <td>{model.name}</td>
                             <td>
-                                {image.url ? (
-                                    <img
-                                        src={image.url}
-                                        alt=""
-                                        style={{ maxWidth: "100px" }}
-                                    />
-                                ) : (
-                                    "-"
-                                )}
+                                {model.llm_providers?.name || "-"} (#{model.llm_provider_id}
+                                )
                             </td>
-                            <td>{image.image_description || "-"}</td>
-                            <td>{image.additional_context || "-"}</td>
+                            <td>{model.provider_model_id}</td>
+                            <td>{model.is_temperature_supported ? "Yes" : "No"}</td>
                             <td>
-                                {image.created_datetime_utc
-                                    ? new Date(
-                                          image.created_datetime_utc,
-                                      ).toLocaleDateString()
-                                    : "-"}
-                            </td>
-                            <td>
-                                <Link href={`/admin/images/${image.id}`}>
+                                <Link href={`/admin/llm-models/${model.id}`}>
                                     Edit / Delete
                                 </Link>
                             </td>
@@ -108,8 +104,8 @@ export default async function ImagesAdmin({ searchParams }: Props) {
                     ))
                 ) : (
                     <tr>
-                        <td colSpan={5} style={{ textAlign: "center" }}>
-                            No images found.
+                        <td colSpan={6} style={{ textAlign: "center" }}>
+                            No models found.
                         </td>
                     </tr>
                 )}
