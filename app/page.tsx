@@ -6,6 +6,11 @@ type CaptionRow = {
     content: string | null;
 };
 
+type ValidCaption = {
+    like_count: number;
+    content: string;
+};
+
 type ImageRow = {
     id: string;
     url: string;
@@ -24,19 +29,19 @@ export default async function Home() {
             ?.map((image) => {
                 const captions = image.captions ?? [];
                 const likedCaptions = captions.filter(
-                    (caption) => (caption.like_count ?? 0) > 0,
+                    (caption): caption is ValidCaption =>
+                        typeof caption.like_count === "number" &&
+                        caption.like_count > 0 &&
+                        typeof caption.content === "string",
                 );
                 const totalLikes = likedCaptions.reduce(
-                    (acc, caption) => acc + (caption.like_count ?? 0),
+                    (acc, caption) => acc + caption.like_count,
                     0,
                 );
 
                 const topCaption =
                     likedCaptions.length > 0
-                        ? [...likedCaptions].sort(
-                              (a, b) =>
-                                  (b.like_count ?? 0) - (a.like_count ?? 0),
-                          )[0]
+                        ? [...likedCaptions].sort((a, b) => b.like_count - a.like_count)[0]
                         : null;
 
                 return {
