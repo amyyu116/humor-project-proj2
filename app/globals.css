@@ -100,7 +100,72 @@ body {
 .chart-wrapper {
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    gap: 36px;
+    flex-wrap: wrap;
+}
+
+.chart-area {
+    display: flex;
+    justify-content: center;
     align-items: center;
+}
+
+.facts-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 12px;
+}
+
+.fact-bubble {
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 25%, #2a3645, #141821);
+    border: 1px solid #2f3a4b;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.fact-bubble-lg {
+    width: 220px;
+    height: 220px;
+}
+
+.fact-bubble-md {
+    width: 200px;
+    height: 200px;
+}
+
+.fact-bubble-sm {
+    width: 180px;
+    height: 180px;
+}
+
+.fact-value {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.fact-label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 10px;
+    color: #c4cbd6;
+}
+
+@media (max-width: 900px) {
+    .facts-panel {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }
 
 /* === Tooltip === */
