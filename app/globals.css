@@ -522,3 +522,85 @@ body {
     font-size: 14px;
     color: #d9d9d9;
 }
+
+/* ============================= */
+/* Admin Dashboard */
+/* ============================= */
+
+.admin-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.admin-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+}
+
+.admin-stat-card {
+    background: linear-gradient(180deg, #151a22 0%, #0f1319 100%);
+    border: 1px solid #273041;
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+}
+
+.admin-stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f5f7fb;
+}
+
+.admin-stat-label {
+    margin-top: 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #c7cfdd;
+}
+
+.admin-stat-sub {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #9aa4b2;
+}
+
+.admin-stat-highlight {
+    background: #12161d;
+    border: 1px solid #273041;
+    border-radius: 18px;
+    padding: 22px 24px;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
+}
+
+.admin-stat-highlight-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #9aa4b2;
+}
+
+.admin-stat-highlight-body {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-stat-highlight-text {
+    font-size: 20px;
+    font-weight: 600;
+    color: #f5f7fb;
+}
+
+.admin-stat-highlight-meta {
+    font-size: 13px;
+    color: #c7cfdd;
+}
+
+.admin-stat-highlight-empty {
+    font-size: 14px;
+    color: #9aa4b2;
+}
